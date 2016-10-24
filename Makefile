@@ -1,4 +1,4 @@
-.PHONY: install run test
+.PHONY: install run test lint
 
 # Initialization ===============================================================
 
@@ -19,3 +19,8 @@ run:
 
 test:
 	python -m unittest discover
+
+# Lint ===============================================================
+
+lint:
+	pep8 .

@@ -1,5 +1,6 @@
 from .color import UNDERLINE, colorize
 
+
 class Board:
 
     """ Reversi Board """
@@ -8,15 +9,15 @@ class Board:
     CELL_BLACK = 1
     CELL_WHITE = 0
 
-    def __init__(self, rows = 8, columns = 8):
+    def __init__(self, rows=8, columns=8):
 
-        """ The number of rows and columns must be even for placing the departure discs in the center of the board """
+        """ Rows / Columns count must be even for placing the departure discs in the center of the board """
 
         if rows % 2 != 0 or columns % 2 != 0:
             raise ValueError("Board rows and columns count must be set with an even number.")
 
-        self.cells   = []
-        self.rows    = rows
+        self.cells = []
+        self.rows = rows
         self.columns = columns
 
         self._init_board()
@@ -62,7 +63,7 @@ class Board:
         board_render = "_" * (self.columns * 2 + 1) + "\n"
 
         for row in self.cells:
-            board_render +=  "|"
+            board_render += "|"
             for col in row:
                 if col == self.CELL_WHITE:
                     character = "○"
@@ -70,7 +71,7 @@ class Board:
                     character = "●"
                 else:
                     character = " "
-                board_render +=  colorize(character, UNDERLINE) + "|"
+                board_render += colorize(character, UNDERLINE) + "|"
             board_render += "\n"
 
         print(board_render)
@@ -81,7 +82,9 @@ class Board:
 
         allowed_positions = []
 
-        # TODO
+        for rowidx, row in enumerate(self.cells):
+            for colidx, col in enumerate(row):
+                self.cells[rowidx][colidx] = col
 
         return allowed_positions
 

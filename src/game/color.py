@@ -1,5 +1,6 @@
 # COLORS
 
+
 PURPLE = '\033[95m'
 CYAN = '\033[96m'
 DARKCYAN = '\033[36m'
@@ -13,5 +14,6 @@ END = '\033[0m'
 
 # HELPERS
 
+
 def colorize(str, color):
-   return color + str + END;
+    return color + str + END
