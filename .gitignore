@@ -1,0 +1,7 @@
+# Makefile
+
+.Makefile.swp
+
+# Python
+
+*.pyc
