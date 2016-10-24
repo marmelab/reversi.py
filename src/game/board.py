@@ -15,6 +15,8 @@ class Board:
 
         if rows % 2 != 0 or columns % 2 != 0:
             raise ValueError("Board rows and columns count must be set with an even number.")
+        if rows < 4 or columns < 4:
+            raise ValueError("Board must have 4 rows or columns at least")
 
         self.cells = []
         self.rows = rows
