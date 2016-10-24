@@ -43,7 +43,7 @@ class Board:
             for col in row:
                 if col == self.CELL_WHITE:
                     score["white"] += 1
-                elif col == self.CELL_BLACK:
+                if col == self.CELL_BLACK:
                     score["black"] += 1
 
         return score
