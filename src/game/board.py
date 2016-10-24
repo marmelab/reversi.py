@@ -1,4 +1,4 @@
-from .color import Color
+from .color import UNDERLINE, colorize
 
 class Board:
 
@@ -70,7 +70,7 @@ class Board:
                     character = "●"
                 else:
                     character = " "
-                board_render +=  Color.apply(character, Color.UNDERLINE) + "|"
+                board_render +=  colorize(character, UNDERLINE) + "|"
             board_render += "\n"
 
         print(board_render)
