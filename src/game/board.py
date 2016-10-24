@@ -89,7 +89,7 @@ class Board:
 
         """ Populate the current board with given positions """
 
-        self._check_positions_array_validity(positions);
+        self._check_positions_array_validity(positions)
 
         for rowidx, row in enumerate(positions):
             for colidx, col in enumerate(row):
@@ -97,7 +97,7 @@ class Board:
 
     def is_possible_move(self, row, column):
 
-        return (row, column) in self.get_possibles_positions();
+        return (row, column) in self.get_possibles_positions()
 
     def _check_positions_array_validity(self, positions):
 
