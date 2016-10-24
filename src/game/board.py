@@ -82,10 +82,6 @@ class Board:
 
         allowed_positions = []
 
-        for rowidx, row in enumerate(self.cells):
-            for colidx, col in enumerate(row):
-                self.cells[rowidx][colidx] = col
-
         return allowed_positions
 
     def populate_from_positions_array(self, positions):
