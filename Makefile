@@ -1,5 +1,12 @@
 .PHONY: install run test lint
 
+BIN = docker run \
+			--interactive \
+			--rm \
+			-v "/code" \
+			--name reversi-python-running \
+			reversi-python
+
 # Initialization ===============================================================
 
 install:
@@ -8,19 +15,14 @@ install:
 # Run ===============================================================
 
 run:
-	docker run \
-		--interactive \
-		--rm \
-		-v "/code" \
-		--name reversi-python-running \
-		reversi-python ./src/reversi.py
+	 $(BIN) bash -c "./src/reversi.py"
 
 # Tests ===============================================================
 
 test:
-	python -m unittest discover
+	$(BIN) bash -c "python -m unittest discover"
 
 # Lint ===============================================================
 
 lint:
-	pep8 .
+	$(BIN) bash -c "pep8 . --max-line-length=150"
