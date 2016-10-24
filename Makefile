@@ -8,7 +8,12 @@ install:
 # Run ===============================================================
 
 run:
-	docker run --interactive --rm --name reversi-python-running reversi-python ./src/reversi.py
+	docker run \
+		--interactive \
+		--rm \
+		-v "/code" \
+		--name reversi-python-running \
+		reversi-python ./src/reversi.py
 
 # Tests ===============================================================
 
