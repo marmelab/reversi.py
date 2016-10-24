@@ -120,3 +120,11 @@ class Board:
         """ Init board with default reversi configuration """
 
         self.cells = [[self.CELL_EMPTY for x in range(self.columns)] for y in range(self.rows)]
+
+        row_middle = int(self.rows/2)
+        column_middle = int(self.columns/2)
+
+        self.cells[row_middle][column_middle] = self.CELL_BLACK
+        self.cells[row_middle - 1][column_middle - 1] = self.CELL_BLACK
+        self.cells[row_middle - 1][column_middle] = self.CELL_WHITE
+        self.cells[row_middle][column_middle - 1] = self.CELL_WHITE
