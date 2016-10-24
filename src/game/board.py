@@ -10,6 +10,8 @@ class Board:
 
     def __init__(self, rows = 8, columns = 8):
 
+        """ The number of rows and columns must be even for placing the departure discs in the center of the board """
+
         if rows % 2 != 0 or columns % 2 != 0:
             raise ValueError("Board rows and columns count must be set with an even number.")
 
