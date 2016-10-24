@@ -65,9 +65,9 @@ class Board:
             board_render +=  "|"
             for col in row:
                 if col == self.CELL_WHITE:
-                    character = "o"
+                    character = "○"
                 elif col == self.CELL_BLACK:
-                    character = "."
+                    character = "●"
                 else:
                     character = " "
                 board_render +=  Color.apply(character, Color.UNDERLINE) + "|"
