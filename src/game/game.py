@@ -1,23 +1,18 @@
 from .board import Board
 
+def start():
 
-class Game:
+    print("\n######### GAME STARTED ############\n")
 
-    def __init__(self):
+    board = Board()
 
-        self.board = Board()
+    print(board.render())
+    print(print_score(board))
+    print(board.render(board.get_legal_moves(board.CELL_WHITE)))
+    print(board.get_flipped_disks_for_move(3, 2, board.CELL_WHITE))
+    #print(board.render(board.get_legal_moves(board.CELL_BLACK)))
 
-    def start(self):
+def print_score(board):
 
-        print("\n######### GAME STARTED ############\n")
-
-        print(self.board.render())
-        print(self.print_score())
-        print(self.board.render(self.board.get_legal_moves(self.board.CELL_WHITE)))
-        print(self.board.get_flipped_disks_for_move(3, 2, self.board.CELL_WHITE))
-        #print(self.board.render(self.board.get_legal_moves(self.board.CELL_BLACK)))
-
-    def print_score(self):
-
-        cell_distribution = self.board.compute_cell_distribution()
-        print("\n#### SCORE (WHITE: {0}, BLACK: {1}) ####\n".format(cell_distribution[self.board.CELL_WHITE], cell_distribution[self.board.CELL_BLACK]))
+    cell_distribution = board.compute_cell_distribution()
+    print("\n#### SCORE (WHITE: {0}, BLACK: {1}) ####\n".format(cell_distribution[board.CELL_WHITE], cell_distribution[board.CELL_BLACK]))
