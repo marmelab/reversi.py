@@ -13,7 +13,9 @@ class Board:
 
         """ Rows / Columns count must be even for placing the departure discs in the center of the board """
 
-        if rows % 2 != 0 or columns % 2 != 0:
+        is_even = lambda x: x % 2 == 0
+
+        if not is_even(rows) or not is_even(columns):
             raise ValueError("Board rows and columns count must be set with an even number.")
         if rows < 4 or columns < 4:
             raise ValueError("Board must have 4 rows or columns at least")
@@ -106,11 +108,11 @@ class Board:
 
         rowlen = len(positions)
 
-        if rowlen != self.rows:
+        if not rowlen == self.rows:
             raise ValueError("Invalid rows count for board population. {0} given, {1} expected.".format(rowlen, self.rows))
 
         for rowidx, row in enumerate(positions):
-            if len(row) != self.columns:
+            if not len(row) == self.columns:
                 raise ValueError("Invalid columns count for board population at {0} row".format(rowidx))
 
     def _init_board(self):

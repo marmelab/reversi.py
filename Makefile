@@ -15,14 +15,14 @@ install:
 # Run ===============================================================
 
 run:
-	 $(BIN) bash -c "./src/reversi.py"
+	 $(BIN) ./src/reversi.py
 
 # Tests ===============================================================
 
 test:
-	$(BIN) bash -c "python -m unittest discover"
+	$(BIN) python -m unittest discover
 
 # Lint ===============================================================
 
 lint:
-	$(BIN) bash -c "pep8 . --max-line-length=150"
+	$(BIN) pep8 . --max-line-length=150
