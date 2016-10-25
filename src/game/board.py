@@ -7,9 +7,9 @@ class Board:
 
     """ Reversi Board """
 
-    CELL_EMPTY = 2
-    CELL_BLACK = 1
-    CELL_WHITE = 0
+    CELL_EMPTY = "empty"
+    CELL_BLACK = "black"
+    CELL_WHITE = "white"
 
     def __init__(self, rows=8, columns=8):
 
@@ -102,11 +102,10 @@ class Board:
         vector_add = lambda v1, v2: tuple(map(operator.add, v1, v2))
 
         # Create directionnal vectors
-        direction_vectors = list(product((-1, 0, 1), (-1, 0, 1)))
-        direction_vectors.remove((0, 0))
+        direction_vectors = product((-1, 0, 1), (-1, 0, 1))
 
-        # Loop over all possibles directions
-        for vector in direction_vectors:
+        # Loop over all possibles directions (except null vector)
+        for vector in (vectors for vectors in direction_vectors if vectors != (0, 0)):
             (x, y) = vector_add((row, column), vector)
             local_flipped_positions = []
 
