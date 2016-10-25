@@ -1,4 +1,6 @@
 from .color import UNDERLINE, colorize
+from itertools import product
+import operator
 
 
 class Board:
@@ -26,67 +28,98 @@ class Board:
 
         self._init_board()
 
-    def play(self, row, column, color):
+    def place_disk(self, row, column, color):
 
-        """ Place disk at the given position """
+        """ Place disk at the given position for color """
 
-        if not self.is_possible_move(row, column):
+        if not self.is_legal_move(row, column, color):
             raise ValueError("You can't place a disk at the following position ({0}, {1})".format(row, column))
 
         self.cells[row][column] = color
-        self.recompute_cells()
 
-        return self.compute_score()
+    def compute_cell_distribution(self):
 
-    def compute_score(self):
+        """ Compute current cell distribution by type """
 
-        """ Compute current score by color """
-
-        score = {"white": 0, "black": 0}
+        score = {self.CELL_WHITE: 0, self.CELL_BLACK: 0, self.CELL_EMPTY: 0}
 
         for row in self.cells:
             for col in row:
-                if col == self.CELL_WHITE:
-                    score["white"] += 1
-                if col == self.CELL_BLACK:
-                    score["black"] += 1
+                score[col] += 1
 
         return score
 
-    def recompute_cells(self):
+    def is_full(self):
+        return self.compute_cell_distribution()[CELL_EMPTY] == 0
 
-        """ Rearrange cells to flip disks """
-
-        # TODO
-
-    def render(self):
+    def render(self, proposals=[]):
 
         """ Render current board """
 
         character = ""
         board_render = "_" * (self.columns * 2 + 1) + "\n"
 
-        for row in self.cells:
+        for rowidx, row in enumerate(self.cells):
             board_render += "|"
-            for col in row:
+            for colidx, col in  enumerate(row):
                 if col == self.CELL_WHITE:
                     character = "○"
                 elif col == self.CELL_BLACK:
                     character = "●"
+                elif (rowidx, colidx) in proposals:
+                    character = str(proposals.index((rowidx, colidx)))
                 else:
                     character = " "
                 board_render += colorize(character, UNDERLINE) + "|"
             board_render += "\n"
 
-        print(board_render)
+        return board_render
 
-    def get_possibles_positions(self):
-
+    def get_legal_moves(self, color):
         """ Return all possibles positions in an array of tuples """
 
         allowed_positions = []
 
+        for rowidx, row in enumerate(self.cells):
+            for colidx, col in enumerate(row):
+                if self.is_legal_move(rowidx, colidx, color):
+                    allowed_positions.append((rowidx, colidx))
+                    print(len(allowed_positions) - 1)
+
         return allowed_positions
+
+    def is_legal_move(self, row, column, color):
+        if not self.get_cell_value(row, column) == self.CELL_EMPTY:
+            return False
+
+        # Vector addition
+        vector_add = lambda v1, v2: tuple(map(operator.add, v1, v2))
+
+        # Create directionnal vectors
+        direction_vectors = list(product((-1, 0, 1), (-1, 0, 1)))
+        direction_vectors.remove((0, 0))
+
+        # Loop over all possibles directions
+        for vector in direction_vectors:
+            (x, y) = vector_add((row, column), vector)
+            flipped = 0
+
+            # While there's no empty cell, same color disk or border, go forward
+            while self.get_cell_value(x, y) not in [None, self.CELL_EMPTY, color]:
+                flipped += 1
+                (x, y) = vector_add((x, y), vector)
+                print(x, y)
+
+            # If the're flipped disks and last position is same color, it's ok
+            if flipped > 0 and self.get_cell_value(x, y) == color:
+                print(vector)
+                return True
+
+    def get_cell_value(self, row, column):
+        try:
+            return self.cells[row][column]
+        except IndexError:
+            return None
 
     def populate_from_positions_array(self, positions):
 
@@ -97,10 +130,6 @@ class Board:
         for rowidx, row in enumerate(positions):
             for colidx, col in enumerate(row):
                 self.cells[rowidx][colidx] = col
-
-    def is_possible_move(self, row, column):
-
-        return (row, column) in self.get_possibles_positions()
 
     def _check_positions_array_validity(self, positions):
 
@@ -128,3 +157,4 @@ class Board:
         self.cells[row_middle - 1][column_middle - 1] = self.CELL_BLACK
         self.cells[row_middle - 1][column_middle] = self.CELL_WHITE
         self.cells[row_middle][column_middle - 1] = self.CELL_WHITE
+        self.cells[row_middle][column_middle - 2] = self.CELL_WHITE
