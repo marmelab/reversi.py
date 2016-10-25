@@ -88,8 +88,15 @@ class Board:
         return allowed_positions
 
     def is_legal_move(self, row, column, color):
+
+        return len(self.get_flipped_disks_for_move(row, column, color)) > 0
+
+    def get_flipped_disks_for_move(self, row, column, color):
+
+        global_flipped_positions = []
+
         if not self.get_cell_value(row, column) == self.CELL_EMPTY:
-            return False
+            return []
 
         # Vector addition
         vector_add = lambda v1, v2: tuple(map(operator.add, v1, v2))
@@ -101,16 +108,18 @@ class Board:
         # Loop over all possibles directions
         for vector in direction_vectors:
             (x, y) = vector_add((row, column), vector)
-            flipped = 0
+            local_flipped_positions = []
 
             # While there's no empty cell, same color disk or border, go forward
             while self.get_cell_value(x, y) not in [None, self.CELL_EMPTY, color]:
-                flipped += 1
+                local_flipped_positions.append((x, y))
                 (x, y) = vector_add((x, y), vector)
 
             # If the're flipped disks and last position is same color, it's ok
-            if flipped > 0 and self.get_cell_value(x, y) == color:
-                return True
+            if len(local_flipped_positions) > 0 and self.get_cell_value(x, y) == color:
+                global_flipped_positions += local_flipped_positions
+
+        return global_flipped_positions
 
     def get_cell_value(self, row, column):
         try:

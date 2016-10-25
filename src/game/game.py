@@ -14,6 +14,7 @@ class Game:
         print(self.board.render())
         print(self.print_score())
         print(self.board.render(self.board.get_legal_moves(self.board.CELL_WHITE)))
+        print(self.board.get_flipped_disks_for_move(3, 2, self.board.CELL_WHITE))
         #print(self.board.render(self.board.get_legal_moves(self.board.CELL_BLACK)))
 
     def print_score(self):
