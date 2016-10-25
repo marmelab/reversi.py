@@ -15,12 +15,12 @@ def start():
         print_score(board)
         print(board.render(board.get_legal_moves(current_color)))
 
-        position_choice = input("Joueur ({0}) Quelle position ?".format(current_color))
+        position_choice = input("Player ({0}) which position ?".format(current_color))
         board.place_disk(current_color, int(position_choice))
 
         current_color = board.CELL_BLACK if current_color == board.CELL_WHITE else board.CELL_WHITE
 
-    #print("{0} REMPORTE LA PARTIE !".format(winner))
+    #print("{0} WINS !".format(winner))
 
 def print_score(board):
     cell_distribution = board.compute_cell_distribution()
