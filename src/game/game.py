@@ -1,15 +1,26 @@
 from .board import Board
+from .move import new_move
+
 
 def start():
     print("\n######### GAME STARTED ############\n")
 
     board = Board()
+    current_color = board.CELL_BLACK
 
     print(board.render())
-    print_score(board)
-    print(board.render(board.get_legal_moves(board.CELL_WHITE)))
-    print(board.get_flipped_disks_for_move(3, 2, board.CELL_WHITE))
-    #print(board.render(board.get_legal_moves(board.CELL_BLACK)))
+
+    while not board.is_full():
+
+        print_score(board)
+        print(board.render(board.get_legal_moves(current_color)))
+
+        position_choice = input("Joueur ({0}) Quelle position ?".format(current_color))
+        board.place_disk(current_color, int(position_choice))
+
+        current_color = board.CELL_BLACK if current_color == board.CELL_WHITE else board.CELL_WHITE
+
+    #print("{0} REMPORTE LA PARTIE !".format(winner))
 
 def print_score(board):
     cell_distribution = board.compute_cell_distribution()
