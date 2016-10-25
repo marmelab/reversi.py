@@ -3,7 +3,7 @@
 language: python
 
 python:
-  - 3.0
+  - "3.5"
 
 install:
   - pip install -r requirements.txt
