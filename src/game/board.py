@@ -105,7 +105,7 @@ class Board:
         direction_vectors = product((-1, 0, 1), (-1, 0, 1))
 
         # Loop over all possibles directions (except null vector)
-        for vector in (vectors for vectors in direction_vectors if vectors != (0, 0)):
+        for vector in (vectors for vectors in direction_vectors if not vectors == (0, 0)):
             (x, y) = vector_add((row, column), vector)
             local_flipped_positions = []
 
