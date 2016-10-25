@@ -51,12 +51,6 @@ class Board:
 
             return False
 
-    def inverse_color(self, color):
-        if color == self.CELL_WHITE:
-            return self.CELL_BLACK
-
-        return self.CELL_WHITE
-
     def compute_cell_distribution(self):
 
         """ Compute current cell distribution by type """
