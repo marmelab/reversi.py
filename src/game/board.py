@@ -84,7 +84,6 @@ class Board:
             for colidx, col in enumerate(row):
                 if self.is_legal_move(rowidx, colidx, color):
                     allowed_positions.append((rowidx, colidx))
-                    print(len(allowed_positions) - 1)
 
         return allowed_positions
 
@@ -108,11 +107,9 @@ class Board:
             while self.get_cell_value(x, y) not in [None, self.CELL_EMPTY, color]:
                 flipped += 1
                 (x, y) = vector_add((x, y), vector)
-                print(x, y)
 
             # If the're flipped disks and last position is same color, it's ok
             if flipped > 0 and self.get_cell_value(x, y) == color:
-                print(vector)
                 return True
 
     def get_cell_value(self, row, column):
@@ -157,4 +154,3 @@ class Board:
         self.cells[row_middle - 1][column_middle - 1] = self.CELL_BLACK
         self.cells[row_middle - 1][column_middle] = self.CELL_WHITE
         self.cells[row_middle][column_middle - 1] = self.CELL_WHITE
-        self.cells[row_middle][column_middle - 2] = self.CELL_WHITE
