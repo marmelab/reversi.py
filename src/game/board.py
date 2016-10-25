@@ -33,15 +33,23 @@ class Board:
 
         """ Place disk at the given position for color """
 
-        proposal_map = self.get_legal_moves(color)
-        row, column = proposal_map[proposal_index]
+        try:
 
-        flipped_positions = self.get_flipped_positions_for_move(new_move(row, column, color))
+            proposal_map = self.get_legal_moves(color)
+            row, column = proposal_map[proposal_index]
 
-        self.cells[row][column] = color
+            flipped_positions = self.get_flipped_positions_for_move(new_move(row, column, color))
 
-        for flipped_position in flipped_positions:
-            self.cells[flipped_position[0]][flipped_position[1]] = color
+            self.cells[row][column] = color
+
+            for flipped_position in flipped_positions:
+                self.cells[flipped_position[0]][flipped_position[1]] = color
+
+            return True
+
+        except IndexError:
+
+            return False
 
     def inverse_color(self, color):
         if color == self.CELL_WHITE:
