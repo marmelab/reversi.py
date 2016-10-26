@@ -22,10 +22,10 @@ def get_size(matrix):
     return (len(matrix[0]), rows_count)
 
 
-def get_cell(matrix, xPos, yPos):
-    """ Return cell value, return None if no one is find """
+def get_cell(matrix, xPos, yPos, default=None):
+    """ Return cell value, return default if no one is find """
 
     try:
         return matrix[xPos][yPos]
     except IndexError:
-        return None
+        return default
