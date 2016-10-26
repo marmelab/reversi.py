@@ -1,5 +1,5 @@
 from .color import UNDERLINE, colorize
-from .cell import new_cell, get_symbol, get_types, TYPE_WHITE, TYPE_BLACK, TYPE_EMPTY
+from .cell import new_cell, get_symbol, get_types, TYPE_WHITE, TYPE_BLACK, TYPE_EMPTY, extract_positions, extract_position
 from .matrix import new_matrix, draw_cells, get_size as get_matrix_size, get_cell as get_matrix_cell
 from .vector import get_directionnal_vectors, vector_add
 
@@ -27,6 +27,7 @@ def validate_board_size(xSize, ySize):
 
 
 def get_empty_cells(xSize, ySize):
+    """ Return a set of empty cells to apply on board """
 
     empty_cells = []
 
@@ -64,26 +65,37 @@ def get_cell_distribution(board):
     return distribution
 
 
+def get_leading_player_type(board):
+
+    distribution = get_cell_distribution(board)
+
+    if(distribution[TYPE_WHITE] > distribution[TYPE_BLACK]):
+        return TYPE_WHITE
+
+    return TYPE_BLACK
+
+
 def is_full(board):
     return get_cell_distribution(board)[TYPE_EMPTY] == 0
 
 
-def render(board, proposals=[]):
+def render(board, proposal_positions=[]):
     """ Render board as string """
 
     xSize, ySize = get_matrix_size(board)
     known_types = get_types()
-    print(known_types)
+
     character = ""
     board_render = "_" * (xSize * 2 + 1) + "\n"
 
     for row_idx, row in enumerate(board):
         board_render += "|"
         for cell_idx, cell in enumerate(row):
-            if cell['type'] in known_types:
-                character = get_symbol(cell['type'])
-            elif cell in proposals:
-                character = str(proposals.index(cell))
+            cell_position = extract_position(cell)
+            if cell_position in proposal_positions:
+                character = str(proposal_positions.index(cell_position))
+            elif cell['type'] in known_types:
+                character = get_symbol(cell)
             board_render += colorize(character, UNDERLINE) + "|"
         board_render += "\n"
 
@@ -91,11 +103,13 @@ def render(board, proposals=[]):
 
 
 def get_flipped_cells_from_cell_change(board, cell):
+    """ Return a set of flipped cells from cell change """
 
     flipped_cells = []
+    empty_cell = new_cell(0, 0, TYPE_EMPTY)
     xPos, yPos, cType = cell['x'], cell['y'], cell['type']
 
-    if not get_matrix_cell(board, xPos, yPos) == TYPE_EMPTY:
+    if not get_matrix_cell(board, xPos, yPos)['type'] == TYPE_EMPTY:
         return []
 
     # Loop over all possibles directions (except null vector)
@@ -104,12 +118,12 @@ def get_flipped_cells_from_cell_change(board, cell):
         vector_flipped_cells = []
 
         # While there's no empty cell, same color disk or border, go forward
-        while get_matrix_cell(board, x, y)['type'] not in [None, TYPE_EMPTY, cType]:
+        while get_matrix_cell(board, x, y, empty_cell)['type'] not in [TYPE_EMPTY, cType]:
             vector_flipped_cells.append(new_cell(x, y, cType))
             (x, y) = vector_add((x, y), vector)
 
         # If the're flipped disks and last cell has same type, it's ok
-        last_cell = get_matrix_cell(board, x, y)
+        last_cell = get_matrix_cell(board, x, y, empty_cell)
         if len(vector_flipped_cells) > 0 and last_cell['type'] == cType:
             flipped_cells += vector_flipped_cells
 
@@ -120,31 +134,33 @@ def is_legal_cell_change(board, cell):
     return len(get_flipped_cells_from_cell_change(board, cell)) > 0
 
 
+def can_type_apply_cell_change(board, cType):
+    return len(get_legal_cell_changes(board)[cType]) > 0
+
+
 def get_legal_cell_changes(board):
     """ Return legal cell changes for each types """
 
-    legal_cell_changes = []
+    legal_cell_changes = {TYPE_WHITE: [], TYPE_BLACK: []}
+    xSize, ySize = get_matrix_size(board)
 
     for cType in [TYPE_WHITE, TYPE_BLACK]:
-        for row_idx, row in enumerate(board):
-            for cell_idx, cell in enumerate(row):
-                cell_test = new_cell(row_idx, cell_idx, cType)
-                if is_legal_cell_change(board, cell_test):
-                    legal_cell_changes.append(cell_test)
+        for yPos in range(0, ySize):
+            for xPos in range(0, xSize):
+                cell_change = new_cell(xPos, yPos, cType)
+                if is_legal_cell_change(board, cell_change):
+                    legal_cell_changes[cType].append(cell_change)
 
     return legal_cell_changes
 
 
 def apply_cell_change(board, cell):
-        """ Attempt to place cell in the board """
+    """ Attempt to place cell in the board """
 
-        try:
+    if not is_legal_cell_change(board, cell):
+        return False
 
-            flipped_cells = get_flipped_cells_from_cell_change(board, cell)
-            draw_cells(board, cell + flipped_cells)
+    flipped_cells = get_flipped_cells_from_cell_change(board, cell)
+    draw_cells(board, [cell] + flipped_cells)
 
-            return True
-
-        except IndexError:
-
-            return False
+    return True

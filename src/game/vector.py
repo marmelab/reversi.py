@@ -5,8 +5,8 @@ import operator
 def get_directionnal_vectors():
     """ Return an iterator of directinnal vectors (N, NE, E, SE, ..)"""
 
-    vectors = product((-1, 0, 1), (-1, 0, 1))
-    return (vectors for vectors in direction_vectors if not vectors == (0, 0))
+    directionnal_vectors = product((-1, 0, 1), (-1, 0, 1))
+    return (vectors for vectors in directionnal_vectors if not vectors == (0, 0))
 
 
 def vector_add(v1, v2):
