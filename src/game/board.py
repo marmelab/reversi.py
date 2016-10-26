@@ -1,177 +1,150 @@
 from .color import UNDERLINE, colorize
-from .move import new_move
-from itertools import product
-import operator
+from .cell import new_cell, get_symbol, get_types, TYPE_WHITE, TYPE_BLACK, TYPE_EMPTY
+from .matrix import new_matrix, draw_cells, get_size as get_matrix_size, get_cell as get_matrix_cell
+from .vector import get_directionnal_vectors, vector_add
 
 
-class Board:
+def new_board(xSize, ySize):
+    """ Create a new board matrix from x/y sizes """
 
-    """ Reversi Board """
+    validate_board_size(xSize, ySize)
 
-    CELL_EMPTY = "empty"
-    CELL_BLACK = "black"
-    CELL_WHITE = "white"
+    matrix = new_matrix(xSize, ySize)
+    draw_cells(matrix, get_empty_cells(xSize, ySize) + get_departure_cells(matrix))
 
-    def __init__(self, rows=8, columns=8):
+    return matrix
 
-        """ Rows / Columns count must be even for placing the departure discs in the center of the board """
 
-        is_even = lambda x: x % 2 == 0
+def validate_board_size(xSize, ySize):
+    """ Validate board size, size must be even to draw departure cells """
 
-        if not is_even(rows) or not is_even(columns):
-            raise ValueError("Board rows and columns count must be set with an even number.")
-        if rows < 4 or columns < 4:
-            raise ValueError("Board must have 4 rows or columns at least")
+    is_even = lambda x: x % 2 == 0
 
-        self.cells = []
-        self.rows = rows
-        self.columns = columns
+    if not is_even(xSize) or not is_even(ySize):
+        raise ValueError("Board x/y size must be even.")
+    if ySize < 4 or xSize < 4:
+        raise ValueError("Board must have 4 rows or columns at least")
 
-        self._init_board()
 
-    def place_disk(self, color, proposal_index):
+def get_empty_cells(xSize, ySize):
 
-        """ Place disk at the given position for color """
+    empty_cells = []
+
+    for yPos in range(0, ySize):
+        for xPos in range(0, xSize):
+            empty_cells.append(new_cell(xPos, yPos, TYPE_EMPTY))
+
+    return empty_cells
+
+def get_departure_cells(board):
+    """ Return departure cells from board """
+
+    xSize, ySize = get_matrix_size(board)
+
+    x_middle = int(xSize/2)
+    y_middle = int(ySize/2)
+
+    return [
+        new_cell(x_middle, y_middle, TYPE_BLACK),
+        new_cell(x_middle - 1, y_middle - 1, TYPE_BLACK),
+        new_cell(x_middle - 1, y_middle, TYPE_WHITE),
+        new_cell(x_middle, y_middle - 1, TYPE_WHITE)
+    ]
+
+
+def get_cell_distribution(board):
+    """ Return cell value distribution grouped by type """
+
+    distribution = {TYPE_WHITE: 0, TYPE_BLACK: 0, TYPE_EMPTY: 0}
+
+    for row in board:
+        for cell in row:
+            distribution[cell['type']] += 1
+
+    return distribution
+
+
+def is_full(board):
+    return get_cell_distribution(board)[TYPE_EMPTY] == 0
+
+
+def render(board, proposals=[]):
+    """ Render board as string """
+
+    xSize, ySize = get_matrix_size(board)
+    known_types = get_types()
+    print(known_types)
+    character = ""
+    board_render = "_" * (xSize * 2 + 1) + "\n"
+
+    for row_idx, row in enumerate(board):
+        board_render += "|"
+        for cell_idx, cell in enumerate(row):
+            if cell['type'] in known_types:
+                character = get_symbol(cell['type'])
+            elif cell in proposals:
+                character = str(proposals.index(cell))
+            board_render += colorize(character, UNDERLINE) + "|"
+        board_render += "\n"
+
+    return board_render
+
+
+def get_flipped_cells_from_cell_change(board, cell):
+
+    flipped_cells = []
+    xPos, yPos, cType = cell['x'], cell['y'], cell['type']
+
+    if not get_matrix_cell(board, xPos, yPos) == TYPE_EMPTY:
+        return []
+
+    # Loop over all possibles directions (except null vector)
+    for vector in get_directionnal_vectors():
+        (x, y) = vector_add((xPos, yPos), vector)
+        vector_flipped_cells = []
+
+        # While there's no empty cell, same color disk or border, go forward
+        while get_matrix_cell(board, x, y)['type'] not in [None, TYPE_EMPTY, cType]:
+            vector_flipped_cells.append(new_cell(x, y, cType))
+            (x, y) = vector_add((x, y), vector)
+
+        # If the're flipped disks and last cell has same type, it's ok
+        last_cell = get_matrix_cell(board, x, y)
+        if len(vector_flipped_cells) > 0 and last_cell['type'] == cType:
+            flipped_cells += vector_flipped_cells
+
+    return flipped_cells
+
+
+def is_legal_cell_change(board, cell):
+    return len(get_flipped_cells_from_cell_change(board, cell)) > 0
+
+
+def get_legal_cell_changes(board):
+    """ Return legal cell changes for each types """
+
+    legal_cell_changes = []
+
+    for cType in [TYPE_WHITE, TYPE_BLACK]:
+        for row_idx, row in enumerate(board):
+            for cell_idx, cell in enumerate(row):
+                cell_test = new_cell(row_idx, cell_idx, cType)
+                if is_legal_cell_change(board, cell_test):
+                    legal_cell_changes.append(cell_test)
+
+    return legal_cell_changes
+
+
+def apply_cell_change(board, cell):
+        """ Attempt to place cell in the board """
 
         try:
 
-            proposal_map = self.get_legal_moves(color)
-            row, column = proposal_map[proposal_index]
-
-            flipped_positions = self.get_flipped_positions_for_move(new_move(row, column, color))
-
-            self.cells[row][column] = color
-
-            for flipped_position in flipped_positions:
-                self.cells[flipped_position[0]][flipped_position[1]] = color
+            flipped_cells = get_flipped_cells_from_cell_change(board, cell)
+            draw_cells(board, cell + flipped_cells)
 
             return True
 
         except IndexError:
 
             return False
-
-    def compute_cell_distribution(self):
-
-        """ Compute current cell distribution by type """
-
-        score = {self.CELL_WHITE: 0, self.CELL_BLACK: 0, self.CELL_EMPTY: 0}
-
-        for row in self.cells:
-            for col in row:
-                score[col] += 1
-
-        return score
-
-    def is_full(self):
-        return self.compute_cell_distribution()[self.CELL_EMPTY] == 0
-
-    def render(self, proposals=[]):
-
-        """ Render current board """
-
-        character = ""
-        board_render = "_" * (self.columns * 2 + 1) + "\n"
-
-        for rowidx, row in enumerate(self.cells):
-            board_render += "|"
-            for colidx, col in enumerate(row):
-                if col == self.CELL_WHITE:
-                    character = "●"
-                elif col == self.CELL_BLACK:
-                    character = "○"
-                elif (rowidx, colidx) in proposals:
-                    character = str(proposals.index((rowidx, colidx)))
-                else:
-                    character = " "
-                board_render += colorize(character, UNDERLINE) + "|"
-            board_render += "\n"
-
-        return board_render
-
-    def get_legal_moves(self, color):
-        """ Return all possibles positions in an array of tuples """
-
-        allowed_positions = []
-
-        for rowidx, row in enumerate(self.cells):
-            for colidx, col in enumerate(row):
-                if self.is_legal_move(new_move(rowidx, colidx, color)):
-                    allowed_positions.append((rowidx, colidx))
-
-        return allowed_positions
-
-    def is_legal_move(self, move):
-        return len(self.get_flipped_positions_for_move(move)) > 0
-
-    def get_flipped_positions_for_move(self, move):
-        global_flipped_positions = []
-        row, column, color = move['row'], move['column'], move['color']
-
-        if not self.get_cell_value(row, column) == self.CELL_EMPTY:
-            return []
-
-        # Vector addition
-        vector_add = lambda v1, v2: tuple(map(operator.add, v1, v2))
-
-        # Create directionnal vectors
-        direction_vectors = product((-1, 0, 1), (-1, 0, 1))
-
-        # Loop over all possibles directions (except null vector)
-        for vector in (vectors for vectors in direction_vectors if not vectors == (0, 0)):
-            (x, y) = vector_add((row, column), vector)
-            local_flipped_positions = []
-
-            # While there's no empty cell, same color disk or border, go forward
-            while self.get_cell_value(x, y) not in [None, self.CELL_EMPTY, color]:
-                local_flipped_positions.append((x, y))
-                (x, y) = vector_add((x, y), vector)
-
-            # If the're flipped disks and last position is same color, it's ok
-            if len(local_flipped_positions) > 0 and self.get_cell_value(x, y) == color:
-                global_flipped_positions += local_flipped_positions
-
-        return global_flipped_positions
-
-    def get_cell_value(self, row, column):
-        try:
-            return self.cells[row][column]
-        except IndexError:
-            return None
-
-    def populate_from_positions_array(self, positions):
-
-        """ Populate the current board with given positions """
-
-        self._check_positions_array_validity(positions)
-
-        for rowidx, row in enumerate(positions):
-            for colidx, col in enumerate(row):
-                self.cells[rowidx][colidx] = col
-
-    def _check_positions_array_validity(self, positions):
-
-        """Ensure that given positions match the current board configuration"""
-
-        rowlen = len(positions)
-
-        if not rowlen == self.rows:
-            raise ValueError("Invalid rows count for board population. {0} given, {1} expected.".format(rowlen, self.rows))
-
-        for rowidx, row in enumerate(positions):
-            if not len(row) == self.columns:
-                raise ValueError("Invalid columns count for board population at {0} row".format(rowidx))
-
-    def _init_board(self):
-
-        """ Init board with default reversi configuration """
-
-        self.cells = [[self.CELL_EMPTY for x in range(self.columns)] for y in range(self.rows)]
-
-        row_middle = int(self.rows/2)
-        column_middle = int(self.columns/2)
-
-        self.cells[row_middle][column_middle] = self.CELL_BLACK
-        self.cells[row_middle - 1][column_middle - 1] = self.CELL_BLACK
-        self.cells[row_middle - 1][column_middle] = self.CELL_WHITE
-        self.cells[row_middle][column_middle - 1] = self.CELL_WHITE

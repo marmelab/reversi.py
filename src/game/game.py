@@ -1,43 +1,30 @@
-from .board import Board
-from .move import new_move
+from .board import new_board, render
+from .cell import TYPE_WHITE, TYPE_BLACK
 
 
 def start():
     print("\n######### GAME STARTED ############\n")
 
-    board = Board()
-    current_color = board.CELL_BLACK
-
-    print(board.render())
-
-    while not board.is_full():
-
-        print_score(board)
-        print_ask_board(board, current_color)
-
-        position_choice = ask_position(current_color)
-
-        while not board.place_disk(current_color, position_choice):
-            print("Invalid position, try again")
-            position_choice = ask_position(current_color)
-
-        current_color = get_reverse_color(current_color)
-
-    #print("{0} WINS !".format(winner))
+    board = new_board(8, 8)
+    print(board)
+    print(render(board))
 
 
-def ask_position(color):
-    return int(input("Player ({0}) which position ?".format(color)))
+def ask_position(cType):
+    return int(input("Player ({0}) which position ?".format(cType)))
 
 
-def print_ask_board(board, color):
-    print(board.render(board.get_legal_moves(color)))
+def print_ask_board(board, cType):
+    legal_changes = get_legal_cell_changes(board)
+
+    from_type_filter = (lambda c: x['type'] == cType)
+
+    legal_changes_from_type = filter(from_type_filter, legal_changes)
+    print(board.render(board, legal_cell_changes_from_type))
 
 
-def print_score(board):
-    cell_distribution = board.compute_cell_distribution()
-    print("\n#### SCORE (WHITE: {0}, BLACK: {1}) ####\n".format(cell_distribution[board.CELL_WHITE], cell_distribution[board.CELL_BLACK]))
+def print_score(cell_distribution):
+    """ Show score from cell_distribution as string """
 
-
-def get_reverse_color(color):
-    return Board.CELL_BLACK if color == Board.CELL_WHITE else Board.CELL_WHITE
+    score = [cell_distribution[TYPE_WHITE], cell_distribution[TYPE_BLACK]]
+    print("\n#### SCORE (WHITE: {0}, BLACK: {1}) ####\n".format(scores))
