@@ -4,29 +4,35 @@ from .cell import TYPE_WHITE, TYPE_BLACK, extract_positions
 def start():
     print("\n######### GAME STARTED ############\n")
 
-    board = new_board(8, 8)
-    current_type = TYPE_BLACK
+    try:
 
-    print_board(board)
+        board = new_board(8, 8)
+        current_type = TYPE_WHITE
 
-    while not is_full(board):
+        print_board(board)
 
-        reverse_player_type = get_reverse_player_type(current_type)
-        if not can_type_apply_cell_change(board, reverse_player_type):
-            print("\n Opponent can't play, play again ! \n")
-        else:
-            current_type = reverse_player_type
+        while not is_full(board):
 
-        print_score(get_cell_distribution(board))
-        print_ask_board(board, current_type)
+            reverse_player_type = get_reverse_player_type(current_type)
+            if not can_type_apply_cell_change(board, reverse_player_type):
+                print("\n Opponent can't play, play again ! \n")
 
-        while not apply_cell_change_from_ask_position(board, current_type):
-            print("Invalid position, try again")
+            else:
+                current_type = reverse_player_type
 
-    print("\n")
-    print_board(board)
-    print("\n#### {0} PLAYER WIN !! ####\n".format(get_leading_player_type(board)))
+            print_score(get_cell_distribution(board))
+            print_ask_board(board, current_type)
 
+            while not apply_cell_change_from_ask_position(board, current_type):
+                print("Invalid position, try again")
+
+        print("\n")
+        print_board(board)
+        print("\n#### {0} PLAYER WIN !! ####\n".format(get_leading_player_type(board)))
+
+    except KeyboardInterrupt:
+
+        print("\n\nBye bye, hope to see you again !\n\n")
 
 def apply_cell_change_from_ask_position(board, cType):
     """ Ask for position and attempt tp apply cell change """
