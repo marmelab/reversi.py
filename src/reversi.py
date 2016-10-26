@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-from game.game import Game
+from game import game
 
 if __name__ == "__main__":
-
-    game = Game()
     game.start()
