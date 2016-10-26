@@ -1,4 +1,5 @@
 from .color import UNDERLINE, colorize
+from .move import new_move
 from itertools import product
 import operator
 
@@ -28,14 +29,27 @@ class Board:
 
         self._init_board()
 
-    def place_disk(self, row, column, color):
+    def place_disk(self, color, proposal_index):
 
         """ Place disk at the given position for color """
 
-        if not self.is_legal_move(row, column, color):
-            raise ValueError("You can't place a disk at the following position ({0}, {1})".format(row, column))
+        try:
 
-        self.cells[row][column] = color
+            proposal_map = self.get_legal_moves(color)
+            row, column = proposal_map[proposal_index]
+
+            flipped_positions = self.get_flipped_positions_for_move(new_move(row, column, color))
+
+            self.cells[row][column] = color
+
+            for flipped_position in flipped_positions:
+                self.cells[flipped_position[0]][flipped_position[1]] = color
+
+            return True
+
+        except IndexError:
+
+            return False
 
     def compute_cell_distribution(self):
 
@@ -50,7 +64,7 @@ class Board:
         return score
 
     def is_full(self):
-        return self.compute_cell_distribution()[CELL_EMPTY] == 0
+        return self.compute_cell_distribution()[self.CELL_EMPTY] == 0
 
     def render(self, proposals=[]):
 
@@ -61,11 +75,11 @@ class Board:
 
         for rowidx, row in enumerate(self.cells):
             board_render += "|"
-            for colidx, col in  enumerate(row):
+            for colidx, col in enumerate(row):
                 if col == self.CELL_WHITE:
-                    character = "○"
-                elif col == self.CELL_BLACK:
                     character = "●"
+                elif col == self.CELL_BLACK:
+                    character = "○"
                 elif (rowidx, colidx) in proposals:
                     character = str(proposals.index((rowidx, colidx)))
                 else:
@@ -82,18 +96,17 @@ class Board:
 
         for rowidx, row in enumerate(self.cells):
             for colidx, col in enumerate(row):
-                if self.is_legal_move(rowidx, colidx, color):
+                if self.is_legal_move(new_move(rowidx, colidx, color)):
                     allowed_positions.append((rowidx, colidx))
 
         return allowed_positions
 
-    def is_legal_move(self, row, column, color):
+    def is_legal_move(self, move):
+        return len(self.get_flipped_positions_for_move(move)) > 0
 
-        return len(self.get_flipped_disks_for_move(row, column, color)) > 0
-
-    def get_flipped_disks_for_move(self, row, column, color):
-
+    def get_flipped_positions_for_move(self, move):
         global_flipped_positions = []
+        row, column, color = move['row'], move['column'], move['color']
 
         if not self.get_cell_value(row, column) == self.CELL_EMPTY:
             return []
