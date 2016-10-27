@@ -16,7 +16,7 @@ def get_size(matrix):
 
     rows_count = len(matrix)
 
-    if(rows_count == 0):
+    if rows_count is 0:
         return (0, 0)
 
     return (len(matrix[0]), rows_count)

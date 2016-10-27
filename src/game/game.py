@@ -1,18 +1,19 @@
-from .board import new_board, render, get_cell_distribution, get_legal_cell_changes, is_full, apply_cell_change, can_type_apply_cell_change, get_leading_player_type
+from .board import new_board, render, get_cell_distribution, get_legal_cell_changes, is_full
+from .board import apply_cell_change, can_type_apply_cell_change, get_leading_player_type
 from .cell import TYPE_WHITE, TYPE_BLACK, extract_positions
+from .color import colorize, BOLD
+
 
 def start():
     print("\n######### GAME STARTED ############\n")
 
     try:
-
         board = new_board(8, 8)
         current_type = TYPE_WHITE
 
-        print_board(board)
+        print(render(board))
 
         while not is_full(board):
-
             reverse_player_type = get_reverse_player_type(current_type)
             if not can_type_apply_cell_change(board, reverse_player_type):
                 print("\n Opponent can't play, play again ! \n")
@@ -26,19 +27,19 @@ def start():
             while not apply_cell_change_from_ask_position(board, current_type):
                 print("Invalid position, try again")
 
-        print("\n")
-        print_board(board)
-        print("\n#### {0} PLAYER WIN !! ####\n".format(get_leading_player_type(board)))
+        print(render(board))
+        winner_name = get_leading_player_type(board)
+        print("\n#### {0} PLAYER WIN !! ####\n".format(colorize(winner_name.upper(), BOLD)))
 
     except KeyboardInterrupt:
-
         print("\n\nBye bye, hope to see you again !\n\n")
+
 
 def apply_cell_change_from_ask_position(board, cType):
     """ Ask for position and attempt tp apply cell change """
 
     try:
-        position = int(input("Player ({0}) which position ? ".format(cType)))
+        position = int(input("Player ({0}) which position ? ".format(colorize(cType.upper(), BOLD))))
         legal_changes = get_legal_cell_changes(board)
         return apply_cell_change(board, legal_changes[cType][position])
     except ValueError:
@@ -61,12 +62,6 @@ def print_ask_board(board, cType):
 
     legal_changes = get_legal_cell_changes(board)
     print(render(board, extract_positions(legal_changes[cType])))
-
-
-def print_board(board):
-    """ Print board render """
-
-    print(render(board))
 
 
 def print_score(cell_distribution):

@@ -23,14 +23,5 @@ def get_types():
     return set([TYPE_WHITE, TYPE_BLACK, TYPE_EMPTY])
 
 
-def extract_position(cell):
-    return (cell['x'], cell['y'])
-
-
 def extract_positions(cells):
-    positions = []
-
-    for cell in cells:
-        positions.append(extract_position(cell))
-
-    return positions
+    return list(map(lambda cell: (cell['x'], cell['y']), cells))
