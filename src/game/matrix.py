@@ -33,7 +33,7 @@ def get_cell(matrix, xPos, yPos, default=None):
         if yPos < 0 or xPos < 0:
             raise IndexError
         return matrix[yPos][xPos]
-    except IndexError:
+    except LookupError:
         return default
 
 
