@@ -1,7 +1,6 @@
-from .color import UNDERLINE, colorize
 from .cell import new_cell, get_symbol, get_types, TYPE_WHITE, TYPE_BLACK, TYPE_EMPTY, extract_positions
-from .matrix import new_matrix, draw_cells, get_size as get_matrix_size, get_cell as get_matrix_cell
-from .vector import get_directionnal_vectors, vector_add
+from .matrix import new_matrix, draw_cells, get_size as get_matrix_size, get_cell as get_matrix_cell, render as matrix_render
+from .vector import get_directionnal_vectors, get_vector_add_generator
 
 
 def new_board(xSize, ySize):
@@ -38,6 +37,7 @@ def get_empty_cells(xSize, ySize):
             empty_cells.append(new_cell(xPos, yPos, TYPE_EMPTY))
 
     return empty_cells
+
 
 def get_departure_cells(matrix):
     """ Return departure cells from board """
@@ -84,24 +84,21 @@ def is_full(matrix):
 def render(matrix, proposal_positions=[]):
     """ Render board as string """
 
-    xSize, ySize = get_matrix_size(matrix)
+    view_matrix = []
     known_types = get_types()
-
     character = ""
-    board_render = "_" * (xSize * 2 + 1) + "\n"
 
     for row_idx, row in enumerate(matrix):
-        board_render += "|"
-        for cell_idx, cell in enumerate(row):
+        view_matrix.append([])
+        for cell in row:
             cell_position = extract_positions([cell])[0]
             if cell_position in proposal_positions:
                 character = str(proposal_positions.index(cell_position))
             elif cell['type'] in known_types:
                 character = get_symbol(cell)
-            board_render += colorize(character, UNDERLINE) + "|"
-        board_render += "\n"
+            view_matrix[row_idx].append(character)
 
-    return board_render
+    return matrix_render(view_matrix)
 
 
 def get_flipped_cells_from_cell_change(matrix, cell):
@@ -111,18 +108,19 @@ def get_flipped_cells_from_cell_change(matrix, cell):
     empty_cell = new_cell(0, 0, TYPE_EMPTY)
     xPos, yPos, cType = cell['x'], cell['y'], cell['type']
 
-    if not get_matrix_cell(matrix, xPos, yPos)['type'] is TYPE_EMPTY:
+    if not get_matrix_cell(matrix, xPos, yPos, empty_cell)['type'] is TYPE_EMPTY:
         return []
 
     # Loop over all possibles directions (except null vector)
     for vector in get_directionnal_vectors():
-        (x, y) = vector_add((xPos, yPos), vector)
+        vector_add_generator = get_vector_add_generator((xPos, yPos), vector)
         vector_flipped_cells = []
 
         # While there's no empty cell, same color disk or border, go forward
-        while get_matrix_cell(matrix, x, y, empty_cell)['type'] not in [TYPE_EMPTY, cType]:
+        for (x, y) in vector_add_generator:
+            if get_matrix_cell(matrix, x, y, empty_cell)['type'] in [TYPE_EMPTY, cType]:
+                break
             vector_flipped_cells.append(new_cell(x, y, cType))
-            (x, y) = vector_add((x, y), vector)
 
         # If the're flipped disks and last cell has same type, it's ok
         last_cell = get_matrix_cell(matrix, x, y, empty_cell)
@@ -144,12 +142,11 @@ def get_legal_cell_changes(matrix):
     """ Return legal cell changes for each types """
 
     legal_cell_changes = {TYPE_WHITE: [], TYPE_BLACK: []}
-    xSize, ySize = get_matrix_size(matrix)
 
     for cType in [TYPE_WHITE, TYPE_BLACK]:
-        for yPos in range(0, ySize):
-            for xPos in range(0, xSize):
-                cell_change = new_cell(xPos, yPos, cType)
+        for row_idx, row in enumerate(matrix):
+            for col_idx, col in enumerate(row):
+                cell_change = new_cell(col_idx, row_idx, cType)
                 if is_legal_cell_change(matrix, cell_change):
                     legal_cell_changes[cType].append(cell_change)
 
