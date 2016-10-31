@@ -4,8 +4,8 @@ TYPE_WHITE = "white"
 TYPE_BLACK = "black"
 
 
-def new_cell(xPos, yPos, type=TYPE_EMPTY):
-    return {'x': xPos, 'y': yPos, 'type': type}
+def new_cell(xPos, yPos, cType=TYPE_EMPTY):
+    return {'x': xPos, 'y': yPos, 'type': cType}
 
 
 def get_symbol(cell):
@@ -20,7 +20,7 @@ def get_symbol(cell):
 
 
 def get_types():
-    return set([TYPE_WHITE, TYPE_BLACK, TYPE_EMPTY])
+    return {TYPE_WHITE, TYPE_BLACK, TYPE_EMPTY}
 
 
 def extract_positions(cells):

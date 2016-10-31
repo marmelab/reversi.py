@@ -11,3 +11,10 @@ def get_directionnal_vectors():
 
 def vector_add(v1, v2):
     return tuple(map(operator.add, v1, v2))
+
+
+def get_vector_add_generator(base_vector, vector):
+    modified_vector = base_vector
+    while True:
+        modified_vector = vector_add(modified_vector, vector)
+        yield modified_vector

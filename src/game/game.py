@@ -9,23 +9,28 @@ def start():
 
     try:
         board = new_board(8, 8)
-        current_type = TYPE_WHITE
+        # Black always start at reversi
+        current_type = TYPE_BLACK
 
         print(render(board))
 
         while not is_full(board):
-            reverse_player_type = get_reverse_player_type(current_type)
-            if not can_type_apply_cell_change(board, reverse_player_type):
-                print("\n Opponent can't play, play again ! \n")
-
-            else:
-                current_type = reverse_player_type
 
             print_score(get_cell_distribution(board))
             print_ask_board(board, current_type)
 
             while not apply_cell_change_from_ask_position(board, current_type):
                 print("Invalid position, try again")
+
+            if not is_full(board):
+                reverse_player_type = get_reverse_player_type(current_type)
+                if can_type_apply_cell_change(board, reverse_player_type):
+                    current_type = reverse_player_type
+                elif not can_type_apply_cell_change(board, current_type):
+                    print("\nSorry, There's no more opportunities...\n")
+                    break
+                else:
+                    print("\nOpponent can't play, play again !\n")
 
         print(render(board))
         winner_name = get_leading_player_type(board)
@@ -34,12 +39,15 @@ def start():
     except KeyboardInterrupt:
         print("\n\nBye bye, hope to see you again !\n\n")
 
+    except Exception as e:
+        print("An unexpected error occured, sorry.\nMessage: {0}\n".format(str(e)))
+
 
 def apply_cell_change_from_ask_position(board, cType):
-    """ Ask for position and attempt tp apply cell change """
+    """ Ask for position and attempt to apply cell change """
 
     try:
-        position = int(input("Player ({0}) which position ? ".format(colorize(cType.upper(), BOLD))))
+        position = int(input("Player ({0}), which position ? ".format(colorize(cType.upper(), BOLD))))
         legal_changes = get_legal_cell_changes(board)
         return apply_cell_change(board, legal_changes[cType][position])
     except ValueError:
